@@ -31,27 +31,25 @@ public class CatalogPaginationTest extends BaseTest {
 
   @Test
   public void next_and_prev_change_catalog_items() {
-    driver.navigate().to(baseUrl + "/index.html");
-    new WebDriverWait(driver, java.time.Duration.ofSeconds(10))
-        .until(ExpectedConditions.visibilityOfElementLocated(By.id("tbodyid")));
+  driver.navigate().to(baseUrl + "/index.html");
+  new WebDriverWait(driver, java.time.Duration.ofSeconds(20))
+      .until(d -> !d.findElements(By.cssSelector("#tbodyid .card-title a")).isEmpty());
 
-    List<String> page1 = readNames();
-    Assertions.assertThat(page1).isNotEmpty();
+  List<String> page1 = readNames();
+  Assertions.assertThat(page1).isNotEmpty();
 
-    goNext();
-    new WebDriverWait(driver, java.time.Duration.ofSeconds(10))
+  // Next →
+  goNext();
+  new WebDriverWait(driver, java.time.Duration.ofSeconds(15))
       .until(d -> {
-        List<String> page2Probe = readNames();
-        return !page2Probe.isEmpty() && !new LinkedHashSet<>(page2Probe).equals(new LinkedHashSet<>(page1));
+        List<String> probe = readNames();
+        return !probe.isEmpty() && !new LinkedHashSet<>(probe).equals(new LinkedHashSet<>(page1));
       });
+  List<String> page2 = readNames();
+  Assertions.assertThat(new LinkedHashSet<>(page2)).isNotEqualTo(new LinkedHashSet<>(page1));
 
-    List<String> page2 = readNames();
-    Set<String> s1 = new LinkedHashSet<>(page1);
-    Set<String> s2 = new LinkedHashSet<>(page2);
-    Assertions.assertThat(s2).as("page2 != page1").isNotEqualTo(s1);
-
-    goPrev();
-    new WebDriverWait(driver, java.time.Duration.ofSeconds(10))
-        .until(d -> new LinkedHashSet<>(readNames()).equals(s1));
-  }
+  // Prev ←
+  goPrev();
+  new WebDriverWait(driver, java.time.Duration.ofSeconds(15))
+      .until(d -> new LinkedHashSet<>(readNames()).equals(new LinkedHashSet<>(page1)));
 }

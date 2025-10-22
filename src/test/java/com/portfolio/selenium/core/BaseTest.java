@@ -12,6 +12,8 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.List;
+
 
 public class BaseTest {
   protected WebDriver driver;
@@ -35,6 +37,16 @@ public class BaseTest {
     driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(0));
     wait = new WebDriverWait(driver, Duration.ofSeconds(15));
   }
+
+  protected void waitForCatalogLoaded() {
+  // Wait until at least one product link is present
+  new WebDriverWait(driver, Duration.ofSeconds(20))
+      .until(d -> {
+        List<WebElement> links = d.findElements(By.cssSelector("#tbodyid .card-title a"));
+        return !links.isEmpty();
+      });
+}
+
 
   @AfterMethod(alwaysRun = true)
   public void snapOnFail(ITestResult result) {
