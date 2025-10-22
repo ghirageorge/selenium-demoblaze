@@ -1,5 +1,9 @@
 # Selenium — DemoBlaze (Java + Maven + TestNG)
 
+CI status:
+
+[![selenium-e2e](https://github.com/ghirageorge/selenium-demoblaze/actions/workflows/selenium.yml/badge.svg?branch=main)](https://github.com/ghirageorge/selenium-demoblaze/actions/workflows/selenium.yml)
+
 Two clean, portfolio-friendly Selenium tests against the public DemoBlaze store.
 - **Add to cart → Checkout** (happy path)
 - **Catalog pagination** (next/prev)
