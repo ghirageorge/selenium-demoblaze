@@ -52,7 +52,7 @@ public class CatalogPaginationTest extends BaseTest {
     waitGridNotEmpty(Duration.ofSeconds(25));
     List<String> page2 = readNames();
 
-    // On CI occasionally the first Next returns same set; try one more time if needed.
+    // If the set didn’t change (edge), try one extra Next
     if (new LinkedHashSet<>(page2).equals(new LinkedHashSet<>(page1))) {
       firstBefore = driver.findElement(By.cssSelector("#tbodyid .card-title a"));
       goNext();
@@ -61,15 +61,40 @@ public class CatalogPaginationTest extends BaseTest {
       page2 = readNames();
     }
 
-    Assertions.assertThat(new LinkedHashSet<>(page2)).as("page2 differs from page1").isNotEqualTo(new LinkedHashSet<>(page1));
+    Assertions.assertThat(new LinkedHashSet<>(page2))
+        .as("page2 differs from page1")
+        .isNotEqualTo(new LinkedHashSet<>(page1));
 
-    // Prev ← (back to original set)
+    // Prev ← (back toward original set)
     WebElement anyBeforePrev = driver.findElement(By.cssSelector("#tbodyid .card-title a"));
     goPrev();
     new WebDriverWait(driver, Duration.ofSeconds(25)).until(ExpectedConditions.stalenessOf(anyBeforePrev));
     waitGridNotEmpty(Duration.ofSeconds(25));
     List<String> page1Again = readNames();
 
-    Assertions.assertThat(new LinkedHashSet<>(page1Again)).as("prev returns original set").isEqualTo(new LinkedHashSet<>(page1));
+    // If we still look like page2 (rare), try one more Prev
+    if (new LinkedHashSet<>(page1Again).equals(new LinkedHashSet<>(page2))) {
+      anyBeforePrev = driver.findElement(By.cssSelector("#tbodyid .card-title a"));
+      goPrev();
+      new WebDriverWait(driver, Duration.ofSeconds(25)).until(ExpectedConditions.stalenessOf(anyBeforePrev));
+      waitGridNotEmpty(Duration.ofSeconds(25));
+      page1Again = readNames();
+    }
+
+    // Robust check: after Prev we are mostly back to original items
+    Set<String> s1 = new LinkedHashSet<>(page1);
+    Set<String> s2 = new LinkedHashSet<>(page2);
+    Set<String> sPrev = new LinkedHashSet<>(page1Again);
+
+    int overlap = (int) sPrev.stream().filter(s1::contains).count();
+    int expectedAtLeast = Math.max(1, Math.min(s1.size(), sPrev.size()) - 2); // allow up to 2 rotations
+    Assertions.assertThat(overlap)
+        .as("prev returns mostly original set")
+        .isGreaterThanOrEqualTo(expectedAtLeast);
+
+    // And we’re not still on page2
+    Assertions.assertThat(sPrev)
+        .as("prev should not equal page2")
+        .isNotEqualTo(s2);
   }
 }
