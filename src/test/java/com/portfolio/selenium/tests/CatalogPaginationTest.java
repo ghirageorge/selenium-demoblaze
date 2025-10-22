@@ -53,3 +53,4 @@ public class CatalogPaginationTest extends BaseTest {
   new WebDriverWait(driver, java.time.Duration.ofSeconds(15))
       .until(d -> new LinkedHashSet<>(readNames()).equals(new LinkedHashSet<>(page1)));
 }
+}
